@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.raidsphere'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    implementation 'com.github.serceman:jnr-fuse:0.5.7'
+}
+
+apply plugin: 'application'
+
+mainClassName = 'org.raidsphere.Main'
+
+test {
+    useJUnitPlatform()
+}
