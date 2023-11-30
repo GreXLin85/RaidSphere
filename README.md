@@ -1,15 +1,20 @@
 # RaidSphere
 
+## Not ready for any use yet
+
 RaidSphere is a Virtual Disk solution that allows you to create a RAID 4 array using multiple
 SSDs, HDDs or USB Disks attached to Raspberry Pi 4. This project was created at 2023 as a
 hobby project and is not intended to be used in production environments. It also has NAS capabilities.
 
+#### NOTE : RaidSphere is created for being used in Raspberry Pi 4 with Raspberry Pi OS. It is not tested in other platforms or operating systems. It may work in other platforms or operating systems but it is not guaranteed.
+
 ## Supported platforms
-| Supported platforms                                           |     |      |
-|---------------------------------------------------------------|-----|------|
-| Linux                                                         | x64 | x86  |
-| MacOS (via [osxfuse](https://osxfuse.github.io/))             | x64 | x86  |
-| Windows (via [winfsp](https://github.com/billziss-gh/winfsp/))| x64 | n/a  |
+
+| Supported platforms                                            |     |     |
+|----------------------------------------------------------------|-----|-----|
+| Linux                                                          | x64 | x86 |
+| MacOS (via [osxfuse](https://osxfuse.github.io/))              | x64 | x86 |
+| Windows (via [winfsp](https://github.com/billziss-gh/winfsp/)) | x64 | n/a |
 
 ## Installation
 
@@ -31,26 +36,16 @@ hobby project and is not intended to be used in production environments. It also
     - If you use MacOS `brew install --cask osxfuse`
     - If you use Windows `choco install winfsp`
 3. Install Java 17 (or higher) on the Raspberry Pi 4
-4. Clone this repository
-5. Build the project using `./gradlew build`
+4. Clone this repository with `git clone https://github.com/GreXLin85/RaidSphere.git` on your computer
+5. Build the project using `./gradlew build` on your computer
 6. Copy the `build/libs/raid-sphere-1.0-SNAPSHOT.jar` file to the Raspberry Pi 4
 7. Create a `raid-sphere` folder in the Raspberry Pi 4 home directory
-8. Copy the `raid-sphere-1.0-SNAPSHOT.jar` file to the `raid-sphere` folder
-9. Create a `raid-sphere.conf` file in the `raid-sphere` folder
-10. Add the following content to the `raid-sphere.conf` file:
-    ```properties
-    # The disks that will be used in the RAID 4 array
-    raid.disks=/dev/sda,/dev/sdb,/dev/sdc
-    raid.parity.disk=/dev/sdd
-    
-    # The path where the RAID 4 array will be mounted
-    virtual_disk.mount.path=/mnt/raid
-
-    # Block size in bytes
-    virtual_disk.block.size=4096
-    ```
-11. Run the `raid-sphere-1.0-SNAPSHOT.jar` file using `java -jar raid-sphere-1.0-SNAPSHOT.jar`
-12. The RAID 4 array will be created and mounted in the path specified in the `raid-sphere.conf` file
+8. Copy the `raid-sphere-1.0-SNAPSHOT.jar` file to the `raid-sphere` folder in the Raspberry Pi 4
+9. Create a `raid-sphere.conf` file in the `raid-sphere` folder in the Raspberry Pi 4
+10. Change the needed variables in the `raid-sphere.conf` file
+11. Run the `raid-sphere-1.0-SNAPSHOT.jar` file using `java -jar raid-sphere-1.0-SNAPSHOT.jar` on the Raspberry Pi 4
+12. The RAID 4 array will be created and mounted in the path specified in the `raid-sphere.conf` file (default
+    is `/mnt/raid-sphere`)
 13. You can now use the RAID 4 array as a normal disk
 14. You can also access the RAID 4 array using the NAS capabilities
     - The NAS capabilities are not implemented yet
