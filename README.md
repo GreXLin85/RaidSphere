@@ -49,3 +49,14 @@ hobby project and is not intended to be used in production environments. It also
 13. You can now use the RAID 4 array as a normal disk
 14. You can also access the RAID 4 array using the NAS capabilities
     - The NAS capabilities are not implemented yet
+
+## Configuration
+
+The configuration file is a simple text file that contains the following variables:
+
+| Variable name             | Description                                                                                          | Default value                |
+|---------------------------|------------------------------------------------------------------------------------------------------|------------------------------|
+| `virtual_disk.mount.path` | The path where the RAID 4 array will be mounted                                                      | `/mnt/raid-sphere`           |
+| `virtual_disk.block.size` | The block size of the disks that will be used in the RAID 4 array. The block size must be in bytes   | `4096`                       |
+| `raid.disks`              | The paths of the disks that will be used in the RAID 4 array. The paths must be separated by a comma | `/dev/sda,/dev/sdb,/dev/sdc` |
+| `raid.parity.disk`        | The path of the disk that will be used as the parity disk                                            | `/dev/sde`                   |
