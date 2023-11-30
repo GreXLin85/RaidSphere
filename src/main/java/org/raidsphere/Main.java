@@ -7,19 +7,13 @@ import jnr.ffi.Platform;
 public class Main {
     public static void main(String[] args) {
         RaidSphereFS fs = new RaidSphereFS();
+        RSConfig config = new RSConfig();
 
         try {
-            String path;
-            switch (Platform.getNativePlatform().getOS()) {
-                case WINDOWS:
-                    path = "J:\\";
-                    break;
-                default:
-                    path = "/tmp/mnth";
-            }
+            String path = config.VirtualDiskMountPath;
+            System.out.println("Mounting to " + path);
 
             fs.mount(Paths.get(path), true, true);
-            System.out.println("Mounted!");
         } finally {
             fs.umount();
             System.out.println("Unmounted!");
