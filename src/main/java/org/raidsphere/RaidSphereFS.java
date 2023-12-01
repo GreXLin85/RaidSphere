@@ -4,11 +4,10 @@ import jnr.ffi.Platform;
 import jnr.ffi.Pointer;
 import jnr.ffi.types.off_t;
 import ru.serce.jnrfuse.ErrorCodes;
-import ru.serce.jnrfuse.FuseException;
 import ru.serce.jnrfuse.FuseFillDir;
 import ru.serce.jnrfuse.FuseStubFS;
-import ru.serce.jnrfuse.struct.FuseFileInfo;
 import ru.serce.jnrfuse.struct.FileStat;
+import ru.serce.jnrfuse.struct.FuseFileInfo;
 import ru.serce.jnrfuse.struct.Statvfs;
 
 import java.io.IOException;
@@ -93,9 +92,36 @@ public class RaidSphereFS extends FuseStubFS {
     public int statfs(String path, Statvfs stbuf) {
         if (Platform.getNativePlatform().getOS() == WINDOWS) {
             if ("/".equals(path)) {
-                stbuf.f_blocks.set(1024 * 1024); // total data blocks in file system
-                stbuf.f_frsize.set(1024);        // fs block size
-                stbuf.f_bfree.set(1024 * 1024);  // free blocks in fs
+                long totalDataBlocks = 0;
+
+                for (String diskPath : dataDisks.keySet()) {
+                    try {
+                        FileStore fileStore = Files.getFileStore(Paths.get(diskPath));
+
+                        long blockSize = fileStore.getBlockSize();
+                        System.out.println("blockSize: " + blockSize);
+                        long totalBlocks = (fileStore.getTotalSpace() / (blockSize * 4)) / 2;
+                        totalDataBlocks += totalBlocks;
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                long usedDataBlocks = 0;
+
+                for (byte[] disk : dataDisks.values()) {
+                    for (byte b : disk) {
+                        if (b != 0) {
+                            usedDataBlocks++;
+                        }
+                    }
+                }
+
+                long freeDataBlocks = totalDataBlocks - usedDataBlocks;
+
+                stbuf.f_blocks.set(totalDataBlocks); // total data blocks in file system
+                stbuf.f_frsize.set(BLOCK_SIZE);        // fs block size
+                stbuf.f_bfree.set(freeDataBlocks);  // free blocks in fs
             }
         }
         return super.statfs(path, stbuf);
