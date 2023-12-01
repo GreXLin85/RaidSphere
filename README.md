@@ -2,7 +2,7 @@
 
 ## Not ready for any use yet
 
-RaidSphere is a Virtual Disk solution that allows you to create a RAID 4 array using multiple
+RaidSphere is a Virtual Disk solution that allows you to create a RAID 1 array using multiple
 SSDs, HDDs or USB Disks attached to Raspberry Pi 4. This project was created at 2023 as a
 hobby project and is not intended to be used in production environments. It also has NAS capabilities.
 
