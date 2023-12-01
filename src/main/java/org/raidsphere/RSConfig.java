@@ -11,7 +11,7 @@ public class RSConfig {
     public String[] raidDisks;
     public String[] raidParityDisks;
     public String VirtualDiskMountPath;
-    public String VirtualBlockSize;
+    public int VirtualBlockSize;
 
     public RSConfig() {
         Properties prop = new Properties();
@@ -62,6 +62,6 @@ public class RSConfig {
 
 
         VirtualDiskMountPath = prop.getProperty("virtual_disk.mount.path");
-        VirtualBlockSize = prop.getProperty("virtual_disk.block.size");
+        VirtualBlockSize = Integer.parseInt(prop.getProperty("virtual_disk.block.size"));
     }
 }
