@@ -11,24 +11,30 @@ import ru.serce.jnrfuse.struct.FuseFileInfo;
 import ru.serce.jnrfuse.struct.FileStat;
 import ru.serce.jnrfuse.struct.Statvfs;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.io.IOException;
+import java.nio.file.FileStore;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
 
 import static jnr.ffi.Platform.OS.WINDOWS;
 
 public class RaidSphereFS extends FuseStubFS {
-    private static final int BLOCK_SIZE = 4096; // Block size in bytes
-    private static final int NUM_DISKS = 4;
-    private List<byte[]> dataDisks;
-    private byte[] parityDisk;
+    private final int BLOCK_SIZE; // Block size in bytes
+    private HashMap<String, byte[]> dataDisks;
+    private HashMap<String, byte[]> parityDisks;
 
     public RaidSphereFS() {
-        dataDisks = new ArrayList<>();
-        for (int i = 0; i < NUM_DISKS - 1; i++) {
-            dataDisks.add(new byte[BLOCK_SIZE]);
+        RSConfig config = new RSConfig();
+        BLOCK_SIZE = config.VirtualBlockSize;
+        // load raid disks
+        dataDisks = new HashMap<String, byte[]>();
+        parityDisks = new HashMap<String, byte[]>();
+
+        for (int i = 0; i < config.raidDisks.length; i++) {
+            dataDisks.put(config.raidDisks[i], new byte[BLOCK_SIZE]);
+            parityDisks.put(config.raidParityDisks[i], new byte[BLOCK_SIZE]);
         }
-        parityDisk = new byte[BLOCK_SIZE];
     }
 
     @Override
