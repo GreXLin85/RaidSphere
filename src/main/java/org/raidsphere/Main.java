@@ -2,8 +2,6 @@ package org.raidsphere;
 
 import java.nio.file.Paths;
 
-import jnr.ffi.Platform;
-
 public class Main {
     public static void main(String[] args) {
         RaidSphereFS fs = new RaidSphereFS();
