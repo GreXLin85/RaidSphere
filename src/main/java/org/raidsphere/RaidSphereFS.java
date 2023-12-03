@@ -10,30 +10,15 @@ import ru.serce.jnrfuse.struct.FileStat;
 import ru.serce.jnrfuse.struct.FuseFileInfo;
 import ru.serce.jnrfuse.struct.Statvfs;
 
-import java.io.IOException;
-import java.nio.file.FileStore;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.HashMap;
-
 import static jnr.ffi.Platform.OS.WINDOWS;
 
 public class RaidSphereFS extends FuseStubFS {
-    private final int BLOCK_SIZE; // Block size in bytes
-    private HashMap<String, byte[]> dataDisks;
-    private HashMap<String, byte[]> parityDisks;
-
+    private RSProxy proxy = new RSProxy();
     public RaidSphereFS() {
-        RSConfig config = new RSConfig();
-        BLOCK_SIZE = config.VirtualBlockSize;
-        // load raid disks
-        dataDisks = new HashMap<String, byte[]>();
-        parityDisks = new HashMap<String, byte[]>();
-
-        for (int i = 0; i < config.raidDisks.length; i++) {
-            dataDisks.put(config.raidDisks[i], new byte[BLOCK_SIZE]);
-            parityDisks.put(config.raidParityDisks[i], new byte[BLOCK_SIZE]);
-        }
+        // load some virtual test files
+        proxy.write("/test1.txt", "Hello World!".getBytes(), 12, 0);
+        proxy.write("/test2.txt", "Hello World!".getBytes(), 12, 0);
+        proxy.mkdir("/testdir");
     }
 
     @Override
@@ -44,47 +29,38 @@ public class RaidSphereFS extends FuseStubFS {
             stat.st_gid.set(getContext().gid.get());
             return 0;
         }
+
+
         return -ErrorCodes.ENOENT();
     }
 
     @Override
-    public int read(String path, Pointer buf, long size, long offset, FuseFileInfo fi) {
-        if (!"/hello".equals(path)) {
-            return -ErrorCodes.ENOENT();
-        }
+    public int write(String path, Pointer buf, long size, long offset, FuseFileInfo fi) {
+        System.out.println(buf);
 
-        byte[] bytes = "HELLO_STR".getBytes();
-        int length = bytes.length;
-        if (offset < length) {
-            if (offset + size > length) {
-                size = length - offset;
-            }
-            buf.put(0, bytes, 0, bytes.length);
-        } else {
-            size = 0;
-        }
-        return (int) size;
+        return 0;
+        //return proxy.write(path, buf.array(), size, offset, fi);
+    }
+
+    @Override
+    public int read(String path, Pointer buf, long size, long offset, FuseFileInfo fi) {
+        return proxy.read(path, buf, size, offset, fi);
     }
 
     @Override
     public int open(String path, FuseFileInfo fi) {
-        if (!"/hello".equals(path)) {
-            return -ErrorCodes.ENOENT();
-        }
         return 0;
     }
 
-
     @Override
-    public int readdir(String path, Pointer buf, FuseFillDir filter, @off_t long offset, FuseFileInfo fi) {
-        if (!"/".equals(path)) {
-            return -ErrorCodes.ENOENT();
+    public int readdir(String path, Pointer buf, FuseFillDir filler, @off_t long offset, FuseFileInfo fi) {
+        filler.apply(buf, ".", null, 0);
+        filler.apply(buf, "..", null, 0);
+
+        for (String name : proxy.readdir(path)) {
+            filler.apply(buf, name, null, 0);
         }
 
-        filter.apply(buf, ".", null, 0);
-        filter.apply(buf, "..", null, 0);
-        filter.apply(buf, "/", null, 0);
-        filter.apply(buf, "/hello", null, 0);
         return 0;
     }
 
@@ -92,38 +68,21 @@ public class RaidSphereFS extends FuseStubFS {
     public int statfs(String path, Statvfs stbuf) {
         if (Platform.getNativePlatform().getOS() == WINDOWS) {
             if ("/".equals(path)) {
-                long totalDataBlocks = 0;
-
-                for (String diskPath : dataDisks.keySet()) {
-                    try {
-                        FileStore fileStore = Files.getFileStore(Paths.get(diskPath));
-
-                        long blockSize = fileStore.getBlockSize();
-                        System.out.println("blockSize: " + blockSize);
-                        long totalBlocks = (fileStore.getTotalSpace() / (blockSize * 4)) / 2;
-                        totalDataBlocks += totalBlocks;
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-
-                long usedDataBlocks = 0;
-
-                for (byte[] disk : dataDisks.values()) {
-                    for (byte b : disk) {
-                        if (b != 0) {
-                            usedDataBlocks++;
-                        }
-                    }
-                }
-
-                long freeDataBlocks = totalDataBlocks - usedDataBlocks;
-
-                stbuf.f_blocks.set(totalDataBlocks); // total data blocks in file system
-                stbuf.f_frsize.set(BLOCK_SIZE);        // fs block size
-                stbuf.f_bfree.set(freeDataBlocks);  // free blocks in fs
+                stbuf.f_blocks.set(proxy.statistics.getTotalDataBlocks()); // total data blocks in file system
+                stbuf.f_frsize.set(proxy.BLOCK_SIZE);        // fs block size
+                stbuf.f_bfree.set(proxy.statistics.getFreeDataBlocks());  // free blocks in fs
             }
         }
         return super.statfs(path, stbuf);
     }
+
+    @Override
+    public int mkdir(String path, long mode) {
+        return proxy.mkdir(path);
+    }
+
+    /*@Override
+    public int rename(String oldpath, String newpath) {
+        return proxy.rename(oldpath, newpath);
+    }*/
 }

@@ -54,7 +54,9 @@ public class RSConfig {
                 if (blockSize != parityBlockSize) {
                     throw new RuntimeException("raid.disk and raid.parity.disk pairs must have the same block size");
                 }
-            }catch (IOException ex) {
+
+                VirtualBlockSize = (int) blockSize;
+            } catch (IOException ex) {
                 throw new RuntimeException(ex.getMessage());
             }
 
@@ -62,6 +64,5 @@ public class RSConfig {
 
 
         VirtualDiskMountPath = prop.getProperty("virtual_disk.mount.path");
-        VirtualBlockSize = Integer.parseInt(prop.getProperty("virtual_disk.block.size"));
     }
 }
