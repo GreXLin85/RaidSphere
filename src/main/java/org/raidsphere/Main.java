@@ -1,9 +1,10 @@
 package org.raidsphere;
 
+import java.io.IOException;
 import java.nio.file.Paths;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         RaidSphereFS fs = new RaidSphereFS();
         RSConfig config = new RSConfig();
 
