@@ -54,8 +54,8 @@ hobby project and is not intended to be used in production environments. It also
 
 The configuration file is a simple text file that contains the following variables:
 
-| Variable name             | Description                                                                                          | Default value       |
-|---------------------------|------------------------------------------------------------------------------------------------------|---------------------|
-| `virtual_disk.mount.path` | The path where the RAID 4 array will be mounted                                                      | `/mnt/raid-sphere`  |
-| `raid.disks`              | The paths of the disks that will be used in the RAID 4 array. The paths must be separated by a comma | `/dev/sda,/dev/sdb` |
-| `raid.parity.disks`       | The path of the disks that will be used as the parity disks                                          | `/dev/sde,/dev/sdc` |
+| Variable name             | Description                                                                                          | Default value         |
+|---------------------------|------------------------------------------------------------------------------------------------------|-----------------------|
+| `virtual_disk.mount.path` | The path where the RAID 4 array will be mounted                                                      | `/tmp/raidsphere`     |
+| `raid.disks`              | The paths of the disks that will be used in the RAID 4 array. The paths must be separated by a comma | `/dev/sdc1,/dev/sdb1` |
+| `raid.parity.disks`       | The path of the disks that will be used as the parity disks                                          | `/dev/sda1,/dev/sdd1` |
