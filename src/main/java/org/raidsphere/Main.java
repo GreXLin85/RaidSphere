@@ -16,7 +16,7 @@ public class Main {
             System.out.println("Mounting to " + path);
 
             if (Platform.getNativePlatform().getOS() == Platform.OS.LINUX) {
-                Files.createTempDirectory(path.split("/")[path.split("/").length - 1]);
+                path = String.valueOf(Files.createTempDirectory(path.split("/")[path.split("/").length - 1]));
             }
 
             fs.mount(Paths.get(path), true, true);
