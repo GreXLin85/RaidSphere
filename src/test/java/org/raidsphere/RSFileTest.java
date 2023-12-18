@@ -17,7 +17,7 @@ class RSFileTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        rsFile = new RSFile("Hello World!".getBytes(), hash.getHash("Hello World!".getBytes()));
+        rsFile = new RSFile(, "Hello World!".getBytes(), hash.getHash("Hello World!".getBytes()));
     }
 
     @Test

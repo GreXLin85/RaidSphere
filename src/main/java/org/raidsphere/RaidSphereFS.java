@@ -10,6 +10,9 @@ import ru.serce.jnrfuse.struct.FileStat;
 import ru.serce.jnrfuse.struct.FuseFileInfo;
 import ru.serce.jnrfuse.struct.Statvfs;
 
+import java.util.Collections;
+import java.util.List;
+
 import static jnr.ffi.Platform.OS.WINDOWS;
 
 public class RaidSphereFS extends FuseStubFS {
@@ -23,15 +26,24 @@ public class RaidSphereFS extends FuseStubFS {
 
     @Override
     public int getattr(String path, FileStat stat) {
-        if ("/" != null) {
-            stat.st_mode.set(FileStat.S_IFDIR | 0777);
-            stat.st_uid.set(getContext().uid.get());
-            stat.st_gid.set(getContext().gid.get());
-            return 0;
+        if (path.equals("/")) {
+            stat.st_mode.set(FileStat.S_IFDIR | 0755);
+            stat.st_nlink.set(2);
+        } else if (proxy.hasFile(path)) {
+            stat.st_mode.set(FileStat.S_IFREG | 0444);
+            stat.st_nlink.set(1);
+            stat.st_size.set(proxy.getFile(path).getSize());
+        } else if (proxy.hasDirectory(path)) {
+            stat.st_mode.set(FileStat.S_IFDIR | 0755);
+            stat.st_nlink.set(2);
+        } else {
+            return -ErrorCodes.ENOENT();
         }
 
+        stat.st_uid.set(getContext().uid.get());
+        stat.st_gid.set(getContext().gid.get());
 
-        return -ErrorCodes.ENOENT();
+        return 0;
     }
 
     @Override
@@ -57,8 +69,16 @@ public class RaidSphereFS extends FuseStubFS {
         filler.apply(buf, ".", null, 0);
         filler.apply(buf, "..", null, 0);
 
-        for (String name : proxy.readdir(path)) {
-            filler.apply(buf, name, null, 0);
+        List<RSDirectory> directories = proxy.getDirectories(path);
+
+        for (RSDirectory directory : directories) {
+            filler.apply(buf, directory.name, null, 0);
+        }
+
+        List<RSFile> files = proxy.getFiles(path);
+
+        for (RSFile file : files.keySet()) {
+            filler.apply(buf, file.name, null, 0);
         }
 
         return 0;
@@ -78,7 +98,12 @@ public class RaidSphereFS extends FuseStubFS {
 
     @Override
     public int mkdir(String path, long mode) {
-        return proxy.mkdir(path);
+        if (!proxy.hasDirectory(path)) {
+            return proxy.mkdir(path);
+        } else {
+            System.out.println("Directory already exists: " + path);
+            return -ErrorCodes.EEXIST();
+        }
     }
 
     /*@Override

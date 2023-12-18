@@ -17,12 +17,12 @@ public class RSDirectory {
         this.name = "ROOT";
     }
 
-    public List<String> getFiles() {
-        return new ArrayList<String>(files.keySet());
+    public HashMap<String, RSFile> getFiles() {
+        return files;
     }
 
-    public List<String> getDirectories() {
-        return new ArrayList<String>(directories.keySet());
+    public HashMap<String, RSDirectory> getDirectories() {
+        return directories;
     }
 
     public RSFile getFile(String name) {

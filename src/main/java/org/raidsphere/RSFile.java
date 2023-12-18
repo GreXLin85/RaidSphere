@@ -1,20 +1,28 @@
 package org.raidsphere;
 
+import jnr.ffi.Runtime;
+import ru.serce.jnrfuse.struct.FileStat;
+
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 
 public class RSFile {
+    public String name;
     private ByteBuffer contents = ByteBuffer.allocate(0);
     private String fullChecksum;
     private String parityChecksum;
+    public FileStat fileStat = new FileStat(Runtime.getSystemRuntime());
 
 
     /**
      * Creates a new file with the given contents.
      *
-     * @param contents The contents of the file.
+     * @param name         The name of the file.
+     * @param contents     The contents of the file.
+     * @param fullChecksum The full MD5 checksum of the file.
      */
-    public RSFile(byte[] contents, String fullChecksum) {
+    public RSFile(String name, byte[] contents, String fullChecksum) {
+        this.name = name;
         this.contents = ByteBuffer.wrap(contents);
         this.fullChecksum = fullChecksum;
 
@@ -24,12 +32,38 @@ public class RSFile {
         } catch (NoSuchAlgorithmException e) {
             // Not possible
         }
+
+        fileStat.st_mode.set(FileStat.S_IFREG | 0444);
+        fileStat.st_nlink.set(1);
+        fileStat.st_size.set(this.contents.capacity());
+        fileStat.st_mtim.tv_nsec.set(System.currentTimeMillis());
+        fileStat.st_ctim.tv_nsec.set(System.currentTimeMillis());
+        fileStat.st_atim.tv_nsec.set(System.currentTimeMillis());
+        fileStat.st_birthtime.tv_nsec.set(System.currentTimeMillis());
     }
 
     /**
      * Creates a new empty file.
      */
-    public RSFile() {
+    public RSFile(String name) {
+        this.name = name;
+
+        try {
+            RSHash rsHash = new RSHash();
+
+            this.fullChecksum = rsHash.getHash(this.contents.array());
+            this.parityChecksum = rsHash.getHash(this.contents.array());
+        } catch (NoSuchAlgorithmException e) {
+            // Not possible
+        }
+
+        fileStat.st_mode.set(FileStat.S_IFREG | 0444);
+        fileStat.st_nlink.set(1);
+        fileStat.st_size.set(this.contents.capacity());
+        fileStat.st_mtim.tv_nsec.set(System.currentTimeMillis());
+        fileStat.st_ctim.tv_nsec.set(System.currentTimeMillis());
+        fileStat.st_atim.tv_nsec.set(System.currentTimeMillis());
+        fileStat.st_birthtime.tv_nsec.set(System.currentTimeMillis());
     }
 
     /**

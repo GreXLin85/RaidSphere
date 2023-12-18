@@ -22,12 +22,12 @@ class RSDirectoryTest {
 
 
         // Add a file to the root directory
-        RSFile file = new RSFile("Hello, World!".getBytes(), hash.getHash("Hello, World!".getBytes()));
+        RSFile file = new RSFile(, "Hello, World!".getBytes(), hash.getHash("Hello, World!".getBytes()));
         directory.addFile("test.txt", file);
 
         // Add a directory to the root directory
         RSDirectory directory2 = new RSDirectory();
-        RSFile file2 = new RSFile("Hello, World!".getBytes(), hash.getHash("Hello, World!".getBytes()));
+        RSFile file2 = new RSFile(, "Hello, World!".getBytes(), hash.getHash("Hello, World!".getBytes()));
 
         directory
                 .addDirectory("test", directory2)
@@ -47,7 +47,7 @@ class RSDirectoryTest {
 
     @Test
     void getFile() {
-        directory.addFile("test3.txt", new RSFile("Hello, World!".getBytes(), hash.getHash("Hello, World!".getBytes())));
+        directory.addFile("test3.txt", new RSFile(, "Hello, World!".getBytes(), hash.getHash("Hello, World!".getBytes())));
         assertEquals(directory.getFile("test3.txt").getFullChecksum(), hash.getHash("Hello, World!".getBytes()));
     }
 
@@ -58,7 +58,7 @@ class RSDirectoryTest {
 
     @Test
     void addFile() {
-        directory.addFile("test2.txt", new RSFile("Hello, World!".getBytes(), hash.getHash("Hello, World!".getBytes())));
+        directory.addFile("test2.txt", new RSFile(, "Hello, World!".getBytes(), hash.getHash("Hello, World!".getBytes())));
         assertEquals(directory.getFiles().size(), 2);
     }
 
@@ -82,7 +82,7 @@ class RSDirectoryTest {
 
     @Test
     void hasFile() {
-        directory.addFile("test5.txt", new RSFile("Hello, World!".getBytes(), hash.getHash("Hello, World!".getBytes())));
+        directory.addFile("test5.txt", new RSFile(, "Hello, World!".getBytes(), hash.getHash("Hello, World!".getBytes())));
         assertTrue(directory.hasFile("test5.txt"));
     }
 
@@ -104,7 +104,7 @@ class RSDirectoryTest {
 
     @Test
     void isFile() {
-        directory.addFile("test2.txt", new RSFile("Hello, World!".getBytes(), hash.getHash("Hello, World!".getBytes())));
+        directory.addFile("test2.txt", new RSFile(, "Hello, World!".getBytes(), hash.getHash("Hello, World!".getBytes())));
         assertTrue(directory.isFile("test2.txt"));
     }
 

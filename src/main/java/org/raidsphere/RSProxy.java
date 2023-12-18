@@ -58,14 +58,14 @@ public class RSProxy {
         }
     }
 
-    public int read(String path, Pointer buf, long size, long offset, FuseFileInfo fi) {
+    public int read(RSPath path, Pointer buf, long size, long offset, FuseFileInfo fi) {
         byte[] fullFile = new byte[0];
         int fullFileSize = 0;
 
         for (int i = 0; i < config.raidDisks.length; i++) {
             String raidDiskPath = config.raidDisks[i];
             RSDisk raidDisk = dataDisks.get(raidDiskPath);
-            RSFile file = raidDisk.getFile(path + ".part" + i);
+            RSFile file = raidDisk.getFile(path.get + ".part" + i);
 
             if (file != null) {
                 byte[] fileData = file.getContents();
@@ -105,7 +105,7 @@ public class RSProxy {
             if (file == null) {
                 try {
                     RSHash hash = new RSHash();
-                    file = new RSFile(buffer, hash.getHash(buffer));
+                    file = new RSFile(path + ".part" + i, buffer, hash.getHash(buffer));
                     raidDisk.addFile(path + ".part" + i, file);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -129,14 +129,68 @@ public class RSProxy {
         return 0;
     }
 
-    public List<String> readdir(String path) {
-        List<String> files = new ArrayList<String>();
+    public boolean hasFile(String path) {
+        for (int i = 0; i < config.raidDisks.length; i++) {
+            String raidDiskPath = config.raidDisks[i];
+            RSDisk raidDisk = dataDisks.get(raidDiskPath);
+            if (raidDisk.getFile(path) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean hasDirectory(String path) {
+        for (int i = 0; i < config.raidDisks.length; i++) {
+            String raidDiskPath = config.raidDisks[i];
+            RSDisk raidDisk = dataDisks.get(raidDiskPath);
+            if (raidDisk.getDirectory(path) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public RSFile getFile(String path) {
+        RSFile tempFile = new RSFile();
 
         for (int i = 0; i < config.raidDisks.length; i++) {
             String raidDiskPath = config.raidDisks[i];
             RSDisk raidDisk = dataDisks.get(raidDiskPath);
-            files.addAll(raidDisk.getDirectory(path).getFiles());
+            RSFile file = raidDisk.getFile(path);
+            if (file != null) {
+                tempFile.appendContents(file.getContents());
+            }
         }
+
+        return tempFile;
+    }
+
+    public List<RSDirectory> getDirectories(String path) {
+        List<RSDirectory> directories = new ArrayList<RSDirectory>();
+
+        for (int i = 0; i < config.raidDisks.length; i++) {
+            String raidDiskPath = config.raidDisks[i];
+            RSDisk raidDisk = dataDisks.get(raidDiskPath);
+            RSDirectory directory = raidDisk.getDirectory(path);
+            if (directory != null) {
+                directories.add(directory);
+            }
+        }
+
+        return directories;
+    }
+
+    public List<RSFile> getFiles(String path) {
+        List<RSFile> files = new ArrayList<RSFile>();
+
+        for (int i = 0; i < config.raidDisks.length; i++) {
+            String raidDiskPath = config.raidDisks[i];
+            RSDisk raidDisk = dataDisks.get(raidDiskPath);
+            RSDirectory directory = raidDisk.getDirectory(path);
+            directory.getFiles().forEach((k, v) -> files.add(v));
+        }
+
         return files;
     }
 }
